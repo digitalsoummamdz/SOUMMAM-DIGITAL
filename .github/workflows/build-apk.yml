@@ -1,0 +1,51 @@
+
+name: Build Soummam Digital APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create Android project
+        run: |
+          flutter create \
+            --platforms=android \
+            --org com.soummam.digital \
+            build_app
+
+      - name: Add Soummam application code
+        run: |
+          cp lib/main.dart build_app/lib/main.dart
+
+      - name: Resolve dependencies
+        working-directory: build_app
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: build_app
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: soummam-digital-android
+          path: build_app/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
