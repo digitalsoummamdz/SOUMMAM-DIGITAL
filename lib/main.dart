@@ -1,67 +1,39 @@
-
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const SoummamApp());
-}
+void main() => runApp(const SoummamApp());
 
-const Color brandGreen = Color(0xFFB8F2C8);
-const Color brandSky = Color(0xFFA7E8F5);
-const Color brandBlue = Color(0xFF1455D9);
-const Color pageWhite = Color(0xFFFFFFFF);
-const Color ink = Color(0xFF172B3A);
+const green = Color(0xFFBDECCB);
+const mint = Color(0xFFEAF8EF);
+const sky = Color(0xFFBDEBF5);
+const blue = Color(0xFF1455D9);
+const navy = Color(0xFF102B4E);
+const bg = Color(0xFFF5F8FC);
+const ink = Color(0xFF172B3A);
+const muted = Color(0xFF708090);
+const line = Color(0xFFE5ECF3);
 
 class Product {
-  final String name;
-  final String category;
-  final String description;
-  final String size;
+  final String name, category, description, size;
   final IconData icon;
   final Color color;
-
-  const Product({
-    required this.name,
-    required this.category,
-    required this.description,
-    required this.size,
-    required this.icon,
-    required this.color,
-  });
+  const Product(this.name, this.category, this.description, this.size,
+      this.icon, this.color);
 }
 
-const List<Product> products = [
-  Product(
-    name: 'Yaourt Nature',
-    category: 'Yaourts',
-    description: 'Yaourt nature - exemple de produit.',
-    size: '125 g',
-    icon: Icons.breakfast_dining_rounded,
-    color: brandGreen,
-  ),
-  Product(
-    name: 'Yaourt aux Fruits',
-    category: 'Yaourts',
-    description: 'Yaourt aux fruits - exemple de produit.',
-    size: '125 g',
-    icon: Icons.icecream_rounded,
-    color: brandSky,
-  ),
-  Product(
-    name: 'Lait Fermenté',
-    category: 'Laitages',
-    description: 'Lait fermenté - exemple de produit.',
-    size: '1 L',
-    icon: Icons.local_drink_rounded,
-    color: Color(0xFFDCE7FF),
-  ),
-  Product(
-    name: 'Dessert Lacté',
-    category: 'Desserts',
-    description: 'Dessert lacté - exemple de produit.',
-    size: '100 g',
-    icon: Icons.cake_rounded,
-    color: Color(0xFFFFE5B8),
-  ),
+// Données fictives de démonstration : à remplacer par des informations validées.
+const products = <Product>[
+  Product('Yaourt Nature', 'Yaourts',
+      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
+      '125 g', Icons.breakfast_dining_rounded, green),
+  Product('Yaourt aux fruits', 'Yaourts',
+      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
+      '125 g', Icons.icecream_rounded, sky),
+  Product('Lait fermenté', 'Laitages',
+      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
+      '1 L', Icons.local_drink_rounded, Color(0xFFDCE7FF)),
+  Product('Dessert lacté', 'Desserts',
+      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
+      '100 g', Icons.cake_rounded, Color(0xFFFFE8C7)),
 ];
 
 class SoummamApp extends StatelessWidget {
@@ -74,19 +46,22 @@ class SoummamApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF7FAFC),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: brandBlue,
-          primary: brandBlue,
-          surface: pageWhite,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: blue, primary: blue),
+        scaffoldBackgroundColor: bg,
         appBarTheme: const AppBarTheme(
-          backgroundColor: pageWhite,
+          backgroundColor: bg,
           foregroundColor: ink,
           elevation: 0,
-          centerTitle: false,
+          surfaceTintColor: Colors.transparent,
         ),
-        fontFamily: 'Roboto',
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          indicatorColor: green,
+          labelTextStyle: WidgetStateProperty.resolveWith((states) =>
+              TextStyle(fontSize: 11,
+                  fontWeight: states.contains(WidgetState.selected)
+                      ? FontWeight.w800 : FontWeight.w500)),
+        ),
       ),
       home: const MainScreen(),
     );
@@ -95,18 +70,15 @@ class SoummamApp extends StatelessWidget {
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
-
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int selectedTab = 0;
-  String searchText = '';
-  String selectedCategory = 'Tous';
-
-  final TextEditingController searchController =
-      TextEditingController();
+  int tab = 0;
+  String query = '';
+  String category = 'Tous';
+  final searchController = TextEditingController();
 
   @override
   void dispose() {
@@ -114,662 +86,508 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
-  List<Product> get filteredProducts {
-    return products.where((product) {
-      final matchesSearch =
-          product.name.toLowerCase().contains(
-                searchText.toLowerCase(),
-              ) ||
-              product.category.toLowerCase().contains(
-                searchText.toLowerCase(),
-              );
+  List<Product> get filtered => products.where((p) {
+    final q = query.trim().toLowerCase();
+    final matchesQuery = p.name.toLowerCase().contains(q) ||
+        p.category.toLowerCase().contains(q);
+    return matchesQuery && (category == 'Tous' || p.category == category);
+  }).toList();
 
-      final matchesCategory = selectedCategory == 'Tous' ||
-          product.category == selectedCategory;
+  void goCatalog([String selected = 'Tous']) {
+    setState(() {
+      tab = 1;
+      category = selected;
+    });
+  }
 
-      return matchesSearch && matchesCategory;
-    }).toList();
+  void message(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(text),
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: brandGreen,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Icons.spa_rounded,
-                color: ink,
-                size: 26,
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Soummam',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                    color: ink,
-                  ),
-                ),
-                Text(
-                  'DIGITAL EXPERIENCE',
-                  style: TextStyle(
-                    fontSize: 9,
-                    letterSpacing: 1.4,
-                    color: brandBlue,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+        titleSpacing: 20,
+        title: const BrandHeader(),
         actions: [
           IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Les notifications seront disponibles prochainement.',
-                  ),
-                ),
-              );
-            },
+            tooltip: 'Notifications',
+            onPressed: () => message('Les notifications seront disponibles plus tard.'),
             icon: const Icon(Icons.notifications_none_rounded),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
         ],
       ),
       body: IndexedStack(
-        index: selectedTab,
-        children: [
-          buildHome(),
-          buildCatalog(),
-          buildOffers(),
-          buildProfile(),
-        ],
+        index: tab,
+        children: [homePage(), catalogPage(), newsPage(), profilePage()],
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedTab,
-        onDestinationSelected: (index) {
-          setState(() => selectedTab = index);
-        },
-        backgroundColor: pageWhite,
-        indicatorColor: brandGreen,
+        selectedIndex: tab,
+        onDestinationSelected: (value) => setState(() => tab = value),
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Accueil',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.grid_view_rounded),
-            label: 'Produits',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.local_offer_outlined),
-            label: 'Offres',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            label: 'Compte',
-          ),
+          NavigationDestination(icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded), label: 'Accueil'),
+          NavigationDestination(icon: Icon(Icons.grid_view_rounded),
+              selectedIcon: Icon(Icons.grid_view_rounded), label: 'Produits'),
+          NavigationDestination(icon: Icon(Icons.local_offer_outlined),
+              selectedIcon: Icon(Icons.local_offer_rounded), label: 'Actualités'),
+          NavigationDestination(icon: Icon(Icons.person_outline_rounded),
+              selectedIcon: Icon(Icons.person_rounded), label: 'Compte'),
         ],
       ),
     );
   }
 
-  Widget buildHome() {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [brandGreen, brandSky],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(26),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'BIENVENUE',
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.w800,
-                  color: ink,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'La qualité au\\nquotidien.',
-                style: TextStyle(
-                  fontSize: 30,
-                  height: 1.12,
-                  fontWeight: FontWeight.w900,
-                  color: ink,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Découvrez notre catalogue et nos nouveautés.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: ink,
-                ),
+  Widget homePage() => ListView(
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+    children: [
+      const Text('BONJOUR 👋', style: TextStyle(color: blue,
+          fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.8)),
+      const SizedBox(height: 6),
+      const Text('Le plaisir au quotidien.', style: TextStyle(color: ink,
+          fontSize: 25, fontWeight: FontWeight.w900, letterSpacing: -0.6)),
+      const SizedBox(height: 18),
+      Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [navy, blue],
+              begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [BoxShadow(color: blue.withOpacity(.18),
+              blurRadius: 22, offset: const Offset(0, 10))],
+        ),
+        child: Stack(children: [
+          Positioned(right: -25, top: -30, child: Container(width: 150,
+              height: 150, decoration: BoxDecoration(
+                  color: sky.withOpacity(.16), shape: BoxShape.circle))),
+          Padding(
+            padding: const EdgeInsets.all(23),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(.14),
+                    borderRadius: BorderRadius.circular(30)),
+                child: const Text('SOUMMAM • DIGITAL', style: TextStyle(
+                    color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
               ),
               const SizedBox(height: 20),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: brandBlue,
-                  foregroundColor: pageWhite,
-                ),
-                onPressed: () {
-                  setState(() => selectedTab = 1);
-                },
-                child: const Text('Explorer les produits'),
+              const Text('Découvrez\nun monde de\ndouceur.',
+                  style: TextStyle(color: Colors.white, fontSize: 31,
+                      height: 1.08, fontWeight: FontWeight.w900,
+                      letterSpacing: -.7)),
+              const SizedBox(height: 12),
+              Text('Explorez le catalogue de démonstration et ses catégories.',
+                  style: TextStyle(color: Colors.white.withOpacity(.86),
+                      fontSize: 13, height: 1.45)),
+              const SizedBox(height: 21),
+              FilledButton.icon(
+                onPressed: () => goCatalog(),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                label: const Text('Explorer le catalogue'),
+                style: FilledButton.styleFrom(backgroundColor: green,
+                    foregroundColor: navy, padding: const EdgeInsets.symmetric(
+                        horizontal: 17, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14))),
               ),
-            ],
+            ]),
           ),
-        ),
-        const SizedBox(height: 28),
-        const SectionHeading(
-          title: 'Nos produits',
-          subtitle: 'Découvrez notre sélection',
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 206,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: products.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              return SizedBox(
-                width: 158,
-                child: ProductCard(
-                  product: products[index],
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 28),
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: pageWhite,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFFE5EDF3)),
-          ),
-          child: const Row(
-            children: [
-              Icon(
-                Icons.campaign_rounded,
-                color: brandBlue,
-                size: 32,
-              ),
-              SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Actualités & nouveautés',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: ink,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      'Retrouvez ici les annonces de la marque.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blueGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          'Prototype de démonstration — données fictives.',
+        ]),
+      ),
+      const SizedBox(height: 27),
+      const SectionHeading('Explorer par catégorie',
+          'Trouvez facilement ce que vous cherchez'),
+      const SizedBox(height: 15),
+      SizedBox(height: 98, child: ListView(scrollDirection: Axis.horizontal,
+        children: [
+          CategoryTile('Tous', Icons.apps_rounded, blue, () => goCatalog()),
+          CategoryTile('Yaourts', Icons.icecream_rounded, const Color(0xFF27845A),
+              () => goCatalog('Yaourts')),
+          CategoryTile('Laitages', Icons.local_drink_rounded, blue,
+              () => goCatalog('Laitages')),
+          CategoryTile('Desserts', Icons.cake_rounded, const Color(0xFFB66A18),
+              () => goCatalog('Desserts')),
+        ])),
+      const SizedBox(height: 27),
+      Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        const Expanded(child: SectionHeading('Nos produits',
+            'Une sélection à découvrir')),
+        TextButton(onPressed: () => goCatalog(), child: const Text('Tout voir')),
+      ]),
+      const SizedBox(height: 13),
+      SizedBox(height: 218, child: ListView.separated(
+        scrollDirection: Axis.horizontal, itemCount: products.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, i) => SizedBox(width: 165,
+            child: ProductCard(product: products[i])),
+      )),
+      const SizedBox(height: 24),
+      Container(
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: line)),
+        child: const Row(children: [
+          CircleAvatar(backgroundColor: mint,
+              child: Icon(Icons.campaign_rounded, color: blue)),
+          SizedBox(width: 13),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Actualités & nouveautés', style: TextStyle(color: ink,
+                    fontWeight: FontWeight.w800, fontSize: 14)),
+                SizedBox(height: 4),
+                Text('Un espace prêt à accueillir les prochaines annonces.',
+                    style: TextStyle(color: muted, fontSize: 12, height: 1.4)),
+              ])),
+          Icon(Icons.chevron_right_rounded, color: muted),
+        ]),
+      ),
+      const SizedBox(height: 18),
+      const Text('Prototype indépendant • Données de démonstration',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.blueGrey,
-          ),
-        ),
-      ],
-    );
-  }
+          style: TextStyle(color: muted, fontSize: 10)),
+    ],
+  );
 
-  Widget buildCatalog() {
+  Widget catalogPage() {
     const categories = ['Tous', 'Yaourts', 'Laitages', 'Desserts'];
-
-    return ListView(
-      padding: const EdgeInsets.all(20),
+    return ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
       children: [
-        const Text(
-          'Catalogue',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: ink,
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Explorez notre sélection de produits.',
-          style: TextStyle(color: Colors.blueGrey),
-        ),
+        const Text('Le catalogue', style: TextStyle(fontSize: 29,
+            fontWeight: FontWeight.w900, color: ink, letterSpacing: -.7)),
+        const SizedBox(height: 5),
+        const Text('Explorez les produits de démonstration.',
+            style: TextStyle(color: muted, fontSize: 13)),
         const SizedBox(height: 20),
         TextField(
           controller: searchController,
-          onChanged: (value) {
-            setState(() => searchText = value);
-          },
+          onChanged: (value) => setState(() => query = value),
           decoration: InputDecoration(
             hintText: 'Rechercher un produit...',
-            prefixIcon: const Icon(Icons.search_rounded),
-            filled: true,
-            fillColor: pageWhite,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
+            prefixIcon: const Icon(Icons.search_rounded, color: blue),
+            suffixIcon: query.isEmpty ? null : IconButton(
+              onPressed: () { searchController.clear(); setState(() => query = ''); },
+              icon: const Icon(Icons.close_rounded)),
+            filled: true, fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(17),
+                borderSide: const BorderSide(color: line)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(17),
+                borderSide: const BorderSide(color: line)),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(17),
+                borderSide: const BorderSide(color: blue, width: 1.4)),
           ),
         ),
-        const SizedBox(height: 16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: categories.map((category) {
-              final active = category == selectedCategory;
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(category),
-                  selected: active,
-                  selectedColor: brandGreen,
-                  onSelected: (_) {
-                    setState(() => selectedCategory = category);
-                  },
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        const SizedBox(height: 18),
-        if (filteredProducts.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(28),
-            child: Text(
-              'Aucun produit trouvé.',
-              textAlign: TextAlign.center,
-            ),
-          )
+        const SizedBox(height: 15),
+        SingleChildScrollView(scrollDirection: Axis.horizontal,
+          child: Row(children: categories.map((c) {
+            final active = c == category;
+            return Padding(padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(label: Text(c), selected: active,
+                showCheckmark: false, selectedColor: green,
+                backgroundColor: Colors.white,
+                side: BorderSide(color: active ? green : line),
+                labelStyle: const TextStyle(color: ink, fontWeight: FontWeight.w700),
+                onSelected: (_) => setState(() => category = c)));
+          }).toList())),
+        const SizedBox(height: 17),
+        Row(children: [
+          const Expanded(child: Text('Produits de la démo',
+              style: TextStyle(color: ink, fontSize: 13,
+                  fontWeight: FontWeight.w700))),
+          Text('${filtered.length} articles', style: const TextStyle(
+              color: blue, fontWeight: FontWeight.w800, fontSize: 12)),
+        ]),
+        const SizedBox(height: 12),
+        if (filtered.isEmpty)
+          Container(padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(color: Colors.white,
+                borderRadius: BorderRadius.circular(20)),
+            child: const Column(children: [
+              Icon(Icons.search_off_rounded, size: 42, color: muted),
+              SizedBox(height: 10),
+              Text('Aucun produit trouvé',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: ink)),
+              SizedBox(height: 4),
+              Text('Essayez un autre mot ou une autre catégorie.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: muted, fontSize: 12)),
+            ]))
         else
           GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: filteredProducts.length,
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 210,
-            ),
-            itemBuilder: (context, index) {
-              return ProductCard(
-                product: filteredProducts[index],
-              );
-            },
-          ),
-      ],
-    );
+            shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+            itemCount: filtered.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
+                mainAxisExtent: 218),
+            itemBuilder: (_, i) => ProductCard(product: filtered[i])),
+        const SizedBox(height: 15),
+        const Text('Les noms et caractéristiques sont fictifs et doivent être validés.',
+            style: TextStyle(color: muted, fontSize: 10, height: 1.4)),
+      ]);
   }
 
-  Widget buildOffers() {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const Text(
-          'Offres & actualités',
-          style: TextStyle(
-            fontSize: 27,
-            fontWeight: FontWeight.w900,
-            color: ink,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Les nouveautés seront publiées ici.',
-          style: TextStyle(color: Colors.blueGrey),
-        ),
-        const SizedBox(height: 22),
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: brandSky.withValues(alpha: 0.55),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                size: 38,
-                color: brandBlue,
-              ),
-              SizedBox(height: 18),
-              Text(
-                'Restez informé.',
-                style: TextStyle(
-                  fontSize: 23,
-                  fontWeight: FontWeight.w900,
-                  color: ink,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Cette section accueillera les campagnes, '
-                'annonces et promotions officielles.',
-                style: TextStyle(height: 1.5, color: ink),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  Widget newsPage() => ListView(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+    children: [
+      const Text('Actualités', style: TextStyle(fontSize: 29,
+          fontWeight: FontWeight.w900, color: ink, letterSpacing: -.7)),
+      const SizedBox(height: 6),
+      const Text('Les nouveautés et annonces auront leur espace ici.',
+          style: TextStyle(color: muted, fontSize: 13)),
+      const SizedBox(height: 22),
+      Container(padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [mint, sky],
+              begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(25)),
+        child: const Column(crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(backgroundColor: Colors.white,
+                child: Icon(Icons.auto_awesome_rounded, color: blue)),
+            SizedBox(height: 18),
+            Text('Restez au courant.', style: TextStyle(fontSize: 25,
+                fontWeight: FontWeight.w900, color: ink)),
+            SizedBox(height: 9),
+            Text('Cette rubrique pourra présenter les nouveautés, campagnes et informations validées.',
+                style: TextStyle(color: ink, height: 1.5, fontSize: 13)),
+          ])),
+      const SizedBox(height: 17),
+      const InfoRow(Icons.verified_outlined, 'Informations vérifiées',
+          'Publier uniquement des annonces confirmées.'),
+      const InfoRow(Icons.notifications_active_outlined, 'Notifications',
+          'La fonction sera ajoutée dans une prochaine version.'),
+    ]);
 
-  Widget buildProfile() {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const Text(
-          'Mon espace',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-            color: ink,
-          ),
-        ),
-        const SizedBox(height: 20),
-        const CircleAvatar(
-          radius: 38,
-          backgroundColor: brandGreen,
-          child: Icon(
-            Icons.person_rounded,
-            size: 42,
-            color: ink,
-          ),
-        ),
-        const SizedBox(height: 12),
-        const Text(
-          'Bienvenue',
+  Widget profilePage() => ListView(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+    children: [
+      const Text('Mon espace', style: TextStyle(fontSize: 29,
+          fontWeight: FontWeight.w900, color: ink, letterSpacing: -.7)),
+      const SizedBox(height: 18),
+      Container(padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+        decoration: BoxDecoration(color: Colors.white,
+            borderRadius: BorderRadius.circular(24), border: Border.all(color: line)),
+        child: const Column(children: [
+          CircleAvatar(radius: 38, backgroundColor: mint,
+              child: Icon(Icons.person_rounded, size: 42, color: blue)),
+          SizedBox(height: 12),
+          Text('Bienvenue', style: TextStyle(color: ink, fontSize: 21,
+              fontWeight: FontWeight.w900)),
+          SizedBox(height: 6),
+          Text('Votre espace personnel sera disponible dans une prochaine version.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: muted, fontSize: 12, height: 1.5)),
+        ])),
+      const SizedBox(height: 18),
+      ProfileTile(Icons.storefront_outlined, 'Espace professionnel',
+          'Services destinés aux commerces',
+          () => message('L’espace professionnel n’est pas encore activé.')),
+      ProfileTile(Icons.support_agent_rounded, 'Assistance',
+          'Contact et questions',
+          () => message('Les coordonnées seront ajoutées après validation.')),
+      ProfileTile(Icons.info_outline_rounded, 'À propos du projet',
+          'Prototype indépendant',
+          () => showAboutDialog(context: context,
+              applicationName: 'Soummam Digital',
+              applicationVersion: '0.2.0',
+              applicationLegalese: 'Prototype indépendant, non affilié officiellement à Soummam.')),
+      const SizedBox(height: 18),
+      const Text('Prototype indépendant, non officiel. Les contenus doivent être validés avant diffusion.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Connectez-vous prochainement pour accéder '
-          'à votre espace personnel.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.blueGrey),
-        ),
-        const SizedBox(height: 24),
-        const ProfileTile(
-          icon: Icons.storefront_outlined,
-          title: 'Espace professionnel',
-          subtitle: 'Fonctionnalités pour les commerces',
-        ),
-        const ProfileTile(
-          icon: Icons.support_agent_rounded,
-          title: 'Assistance',
-          subtitle: 'Contact et questions',
-        ),
-        const ProfileTile(
-          icon: Icons.info_outline_rounded,
-          title: 'À propos',
-          subtitle: 'Soummam Digital — prototype',
-        ),
-      ],
-    );
-  }
+          style: TextStyle(color: muted, fontSize: 10, height: 1.5)),
+    ]);
+}
+
+class BrandHeader extends StatelessWidget {
+  const BrandHeader({super.key});
+  @override
+  Widget build(BuildContext context) => Row(children: [
+    Container(width: 42, height: 42,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [green, sky]),
+        borderRadius: BorderRadius.circular(14)),
+      child: const Icon(Icons.spa_rounded, color: navy, size: 25)),
+    const SizedBox(width: 10),
+    const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Soummam', style: TextStyle(fontWeight: FontWeight.w900,
+          fontSize: 19, color: ink, letterSpacing: -.4)),
+      Text('DIGITAL EXPERIENCE', style: TextStyle(fontSize: 8,
+          letterSpacing: 1.5, color: blue, fontWeight: FontWeight.w800)),
+    ]),
+  ]);
 }
 
 class SectionHeading extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const SectionHeading({
-    super.key,
-    required this.title,
-    required this.subtitle,
-  });
-
+  final String title, subtitle;
+  const SectionHeading(this.title, this.subtitle, {super.key});
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 23,
-            fontWeight: FontWeight.w900,
-            color: ink,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.blueGrey,
-          ),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(title, style: const TextStyle(fontSize: 20,
+          fontWeight: FontWeight.w900, color: ink, letterSpacing: -.4)),
+      const SizedBox(height: 4),
+      Text(subtitle, style: const TextStyle(fontSize: 12,
+          color: muted, height: 1.35)),
+    ]);
+}
+
+class CategoryTile extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const CategoryTile(this.title, this.icon, this.color, this.onTap, {super.key});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(right: 11),
+    child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18),
+      child: Container(width: 79,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 7),
+        decoration: BoxDecoration(color: Colors.white,
+            borderRadius: BorderRadius.circular(18), border: Border.all(color: line)),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon, color: color, size: 27),
+          const SizedBox(height: 8),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: ink, fontWeight: FontWeight.w700,
+                  fontSize: 10)),
+        ]))));
 }
 
 class ProductCard extends StatelessWidget {
   final Product product;
-
-  const ProductCard({
-    super.key,
-    required this.product,
-  });
-
+  const ProductCard({super.key, required this.product});
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: pageWhite,
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFFE8EEF3)),
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ProductDetails(product: product),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: product.color,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(
-                    product.icon,
-                    size: 56,
-                    color: brandBlue,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                product.name,
-                maxLines: 1,
+  Widget build(BuildContext context) => Card(
+    color: Colors.white, elevation: 0, margin: EdgeInsets.zero,
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(21),
+        side: const BorderSide(color: line)),
+    child: InkWell(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => ProductDetails(product: product))),
+      child: Padding(padding: const EdgeInsets.all(11),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(child: Container(width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [
+                product.color, product.color.withOpacity(.55)],
+                begin: Alignment.topLeft, end: Alignment.bottomRight),
+              borderRadius: BorderRadius.circular(15)),
+            child: Stack(children: [
+              Positioned(right: 8, top: 8, child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(.75),
+                    shape: BoxShape.circle),
+                child: const Icon(Icons.arrow_outward_rounded,
+                    size: 13, color: navy))),
+              Center(child: Icon(product.icon, size: 55, color: blue)),
+            ]))),
+          const SizedBox(height: 10),
+          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w900,
+                  fontSize: 13, color: ink)),
+          const SizedBox(height: 5),
+          Row(children: [
+            Expanded(child: Text(product.category, maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: ink,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${product.category} • ${product.size}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.blueGrey,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+                style: const TextStyle(fontSize: 10, color: muted))),
+            Text(product.size, style: const TextStyle(fontSize: 10,
+                fontWeight: FontWeight.w800, color: blue)),
+          ]),
+        ]))));
 }
 
 class ProductDetails extends StatelessWidget {
   final Product product;
-
-  const ProductDetails({
-    super.key,
-    required this.product,
-  });
-
+  const ProductDetails({super.key, required this.product});
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Détails du produit')),
-      body: ListView(
-        padding: const EdgeInsets.all(22),
-        children: [
-          Container(
-            height: 250,
-            decoration: BoxDecoration(
-              color: product.color,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Icon(
-              product.icon,
-              size: 110,
-              color: brandBlue,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            product.name,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              color: ink,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${product.category} • ${product.size}',
-            style: const TextStyle(color: brandBlue),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            product.description,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.6,
-              color: ink,
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Informations de démonstration. '
-            'Les données officielles du produit devront être validées.',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.blueGrey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Fiche produit')),
+    body: ListView(padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+      children: [
+        Container(height: 270,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              product.color, product.color.withOpacity(.55)],
+              begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(28)),
+          child: Icon(product.icon, size: 112, color: blue)),
+        const SizedBox(height: 23),
+        Align(alignment: Alignment.centerLeft, child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(color: mint, borderRadius: BorderRadius.circular(20)),
+          child: Text(product.category, style: const TextStyle(color: navy,
+              fontWeight: FontWeight.w800, fontSize: 11)))),
+        const SizedBox(height: 12),
+        Text(product.name, style: const TextStyle(fontSize: 28,
+            fontWeight: FontWeight.w900, color: ink, letterSpacing: -.6)),
+        const SizedBox(height: 8),
+        Text('Format : ${product.size}', style: const TextStyle(color: blue,
+            fontWeight: FontWeight.w800, fontSize: 13)),
+        const SizedBox(height: 20),
+        Container(padding: const EdgeInsets.all(17),
+          decoration: BoxDecoration(color: Colors.white,
+              borderRadius: BorderRadius.circular(18), border: Border.all(color: line)),
+          child: Text(product.description, style: const TextStyle(
+              fontSize: 14, height: 1.6, color: ink))),
+        const SizedBox(height: 16),
+        const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.info_outline_rounded, color: muted, size: 18),
+          SizedBox(width: 9),
+          Expanded(child: Text('Fiche de démonstration. Les ingrédients, valeurs nutritionnelles et informations officielles doivent être vérifiés avant publication.',
+              style: TextStyle(color: muted, fontSize: 11, height: 1.5))),
+        ]),
+      ]));
+}
+
+class InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String title, subtitle;
+  const InfoRow(this.icon, this.title, this.subtitle, {super.key});
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(color: Colors.white,
+        borderRadius: BorderRadius.circular(18), border: Border.all(color: line)),
+    child: Row(children: [
+      CircleAvatar(backgroundColor: mint, child: Icon(icon, color: blue)),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: const TextStyle(color: ink,
+            fontWeight: FontWeight.w800, fontSize: 13)),
+        const SizedBox(height: 4),
+        Text(subtitle, style: const TextStyle(color: muted,
+            fontSize: 11, height: 1.4)),
+      ])),
+    ]));
 }
 
 class ProfileTile extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const ProfileTile({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
+  final String title, subtitle;
+  final VoidCallback onTap;
+  const ProfileTile(this.icon, this.title, this.subtitle, this.onTap, {super.key});
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: pageWhite,
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: brandSky,
-          child: Icon(icon, color: brandBlue),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right_rounded),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Card(
+    color: Colors.white, elevation: 0, margin: const EdgeInsets.only(bottom: 10),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: line)),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      leading: CircleAvatar(backgroundColor: mint, child: Icon(icon, color: blue)),
+      title: Text(title, style: const TextStyle(color: ink,
+          fontWeight: FontWeight.w800, fontSize: 13)),
+      subtitle: Text(subtitle, style: const TextStyle(color: muted, fontSize: 11)),
+      trailing: const Icon(Icons.chevron_right_rounded, color: muted),
+      onTap: onTap,
+    ));
 }
