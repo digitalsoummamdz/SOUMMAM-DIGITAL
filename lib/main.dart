@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 
-void main() => runApp(const SoummamApp());
+void main() => runApp(const SoummamDigitalApp());
 
 const green = Color(0xFFBDECCB);
 const mint = Color(0xFFEAF8EF);
@@ -8,36 +9,9 @@ const sky = Color(0xFFBDEBF5);
 const blue = Color(0xFF1455D9);
 const navy = Color(0xFF102B4E);
 const bg = Color(0xFFF5F8FC);
-const ink = Color(0xFF172B3A);
-const muted = Color(0xFF708090);
-const line = Color(0xFFE5ECF3);
 
-class Product {
-  final String name, category, description, size;
-  final IconData icon;
-  final Color color;
-  const Product(this.name, this.category, this.description, this.size,
-      this.icon, this.color);
-}
-
-// Données fictives de démonstration : à remplacer par des informations validées.
-const products = <Product>[
-  Product('Yaourt Nature', 'Yaourts',
-      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
-      '125 g', Icons.breakfast_dining_rounded, green),
-  Product('Yaourt aux fruits', 'Yaourts',
-      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
-      '125 g', Icons.icecream_rounded, sky),
-  Product('Lait fermenté', 'Laitages',
-      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
-      '1 L', Icons.local_drink_rounded, Color(0xFFDCE7FF)),
-  Product('Dessert lacté', 'Desserts',
-      'Fiche produit de démonstration. Les informations officielles restent à confirmer.',
-      '100 g', Icons.cake_rounded, Color(0xFFFFE8C7)),
-];
-
-class SoummamApp extends StatelessWidget {
-  const SoummamApp({super.key});
+class SoummamDigitalApp extends StatelessWidget {
+  const SoummamDigitalApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,548 +20,991 @@ class SoummamApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: blue, primary: blue),
         scaffoldBackgroundColor: bg,
+        colorScheme: ColorScheme.fromSeed(seedColor: blue),
         appBarTheme: const AppBarTheme(
           backgroundColor: bg,
-          foregroundColor: ink,
+          foregroundColor: navy,
           elevation: 0,
-          surfaceTintColor: Colors.transparent,
         ),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: Colors.white,
-          indicatorColor: green,
-          labelTextStyle: WidgetStateProperty.resolveWith((states) =>
-              TextStyle(fontSize: 11,
-                  fontWeight: states.contains(WidgetState.selected)
-                      ? FontWeight.w800 : FontWeight.w500)),
+        cardTheme: CardThemeData(
+          color: Colors.white,
+          elevation: 1,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
       ),
-      home: const MainScreen(),
+      home: const WelcomePage(),
     );
   }
 }
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int tab = 0;
-  String query = '';
-  String category = 'Tous';
-  final searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
-
-  List<Product> get filtered => products.where((p) {
-    final q = query.trim().toLowerCase();
-    final matchesQuery = p.name.toLowerCase().contains(q) ||
-        p.category.toLowerCase().contains(q);
-    return matchesQuery && (category == 'Tous' || p.category == category);
-  }).toList();
-
-  void goCatalog([String selected = 'Tous']) {
-    setState(() {
-      tab = 1;
-      category = selected;
-    });
-  }
-
-  void message(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(text),
-      behavior: SnackBarBehavior.floating,
-    ));
-  }
+class WelcomePage extends StatelessWidget {
+  const WelcomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Container(
+                  width: 130,
+                  height: 130,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x14000000), blurRadius: 20),
+                    ],
+                  ),
+                  child: Image.asset(
+                    'assets/soummam_logo.jpeg',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.eco_rounded,
+                      color: blue,
+                      size: 80,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Soummam Digital',
+                  style: TextStyle(
+                    color: navy,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Votre univers Soummam, en un seul endroit.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 15),
+                ),
+                const SizedBox(height: 32),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Choisissez votre espace',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: navy,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _roleButton(
+                  context,
+                  Icons.shopping_bag_outlined,
+                  'Espace consommateur',
+                  'Produits, actualités et communauté',
+                  blue,
+                  'Consommateur',
+                ),
+                const SizedBox(height: 12),
+                _roleButton(
+                  context,
+                  Icons.storefront_outlined,
+                  'Espace commerçant',
+                  'Catalogue de gros et commandes',
+                  Colors.teal,
+                  'Commerçant',
+                ),
+                const SizedBox(height: 12),
+                _roleButton(
+                  context,
+                  Icons.admin_panel_settings_outlined,
+                  'Espace employé',
+                  'Outils de gestion — démonstration',
+                  navy,
+                  'Employé',
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Prototype de présentation • Données de démonstration',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _roleButton(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+    String role,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HomePage(role: role),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(17),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor: color.withValues(alpha: 0.10),
+                  child: Icon(icon, color: color, size: 27),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Product {
+  final String name;
+  final String category;
+  final String description;
+  final String image;
+  final String pack;
+
+  const Product({
+    required this.name,
+    required this.category,
+    required this.description,
+    required this.image,
+    required this.pack,
+  });
+}
+
+const products = <Product>[
+  Product(
+    name: 'Mamzoudj Cerise',
+    category: 'Yaourts',
+    description: 'Produit laitier aromatisé à la cerise.',
+    image: 'assets/mamzoudj_cerise.png',
+    pack: 'Carton — quantité à confirmer',
+  ),
+  Product(
+    name: 'Yaourt Nature 125g',
+    category: 'Yaourts',
+    description: 'Yaourt nature.',
+    image: '',
+    pack: 'Format de gros à confirmer',
+  ),
+  Product(
+    name: 'Yaourt aux fruits 125g',
+    category: 'Yaourts',
+    description: 'Yaourt aux fruits.',
+    image: '',
+    pack: 'Format de gros à confirmer',
+  ),
+  Product(
+    name: 'Lait fermenté 1L',
+    category: 'Laitages',
+    description: 'Produit laitier fermenté.',
+    image: '',
+    pack: 'Format de gros à confirmer',
+  ),
+  Product(
+    name: 'Dessert lacté 100g',
+    category: 'Desserts',
+    description: 'Dessert lacté.',
+    image: '',
+    pack: 'Format de gros à confirmer',
+  ),
+];
+
+class HomePage extends StatefulWidget {
+  final String role;
+  const HomePage({super.key, required this.role});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int tab = 0;
+  String category = 'Tous';
+  final Map<String, int> cart = {};
+  final Set<String> liked = {};
+  final List<String> orders = [];
+  final List<String> posts = [
+    'Bienvenue dans Soummam Digital : votre espace communautaire.',
+    'Découvrez nos produits laitiers et nos actualités.',
+    'Les jeux et concours seront annoncés prochainement.',
+  ];
+  final List<String> comments = [];
+  final TextEditingController commentController = TextEditingController();
+
+  bool get isMerchant => widget.role == 'Commerçant';
+  bool get isStaff => widget.role == 'Employé';
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = isStaff
+        ? [
+            _dashboard(),
+            _manageProducts(),
+            _ordersPage(),
+            _supportPage(),
+          ]
+        : isMerchant
+            ? [
+                _dashboard(),
+                _catalog(),
+                _cartPage(),
+                _ordersPage(),
+                _supportPage(),
+              ]
+            : [
+                _dashboard(),
+                _catalog(),
+                _newsPage(),
+                _accountPage(),
+              ];
+
+    final labels = isStaff
+        ? ['Accueil', 'Produits', 'Commandes', 'Support']
+        : isMerchant
+            ? ['Accueil', 'Catalogue', 'Panier', 'Commandes', 'Support']
+            : ['Accueil', 'Produits', 'Actualités', 'Compte'];
+
+    final icons = isStaff
+        ? [
+            Icons.dashboard_outlined,
+            Icons.inventory_2_outlined,
+            Icons.receipt_long_outlined,
+            Icons.support_agent_outlined,
+          ]
+        : isMerchant
+            ? [
+                Icons.home_outlined,
+                Icons.storefront_outlined,
+                Icons.shopping_cart_outlined,
+                Icons.receipt_long_outlined,
+                Icons.support_agent_outlined,
+              ]
+            : [
+                Icons.home_outlined,
+                Icons.shopping_bag_outlined,
+                Icons.dynamic_feed_outlined,
+                Icons.person_outline,
+              ];
+
+    return Scaffold(
       appBar: AppBar(
-        titleSpacing: 20,
-        title: const BrandHeader(),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/soummam_logo.jpeg',
+              width: 38,
+              height: 38,
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.eco_rounded, color: blue),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Soummam Digital',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            tooltip: 'Notifications',
-            onPressed: () => message('Les notifications seront disponibles plus tard.'),
-            icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: 'Changer d’espace',
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.swap_horiz_rounded),
           ),
-          const SizedBox(width: 8),
         ],
       ),
-      body: IndexedStack(
-        index: tab,
-        children: [homePage(), catalogPage(), newsPage(), profilePage()],
+      body: SafeArea(
+        child: IndexedStack(
+          index: tab.clamp(0, pages.length - 1),
+          children: pages,
+        ),
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: tab,
+        selectedIndex: tab.clamp(0, labels.length - 1),
         onDestinationSelected: (value) => setState(() => tab = value),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded), label: 'Accueil'),
-          NavigationDestination(icon: Icon(Icons.grid_view_rounded),
-              selectedIcon: Icon(Icons.grid_view_rounded), label: 'Produits'),
-          NavigationDestination(icon: Icon(Icons.local_offer_outlined),
-              selectedIcon: Icon(Icons.local_offer_rounded), label: 'Actualités'),
-          NavigationDestination(icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded), label: 'Compte'),
+        destinations: [
+          for (int i = 0; i < labels.length; i++)
+            NavigationDestination(
+              icon: Icon(icons[i]),
+              label: labels[i],
+            ),
         ],
       ),
     );
   }
 
-  Widget homePage() => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-    children: [
-      const Text('BONJOUR 👋', style: TextStyle(color: blue,
-          fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.8)),
-      const SizedBox(height: 6),
-      const Text('Le plaisir au quotidien.', style: TextStyle(color: ink,
-          fontSize: 25, fontWeight: FontWeight.w900, letterSpacing: -0.6)),
-      const SizedBox(height: 18),
-      Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [navy, blue],
-              begin: Alignment.topLeft, end: Alignment.bottomRight),
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [BoxShadow(color: blue.withOpacity(.18),
-              blurRadius: 22, offset: const Offset(0, 10))],
-        ),
-        child: Stack(children: [
-          Positioned(right: -25, top: -30, child: Container(width: 150,
-              height: 150, decoration: BoxDecoration(
-                  color: sky.withOpacity(.16), shape: BoxShape.circle))),
-          Padding(
-            padding: const EdgeInsets.all(23),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(.14),
-                    borderRadius: BorderRadius.circular(30)),
-                child: const Text('SOUMMAM • DIGITAL', style: TextStyle(
-                    color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
-              ),
-              const SizedBox(height: 20),
-              const Text('Découvrez\nun monde de\ndouceur.',
-                  style: TextStyle(color: Colors.white, fontSize: 31,
-                      height: 1.08, fontWeight: FontWeight.w900,
-                      letterSpacing: -.7)),
-              const SizedBox(height: 12),
-              Text('Explorez le catalogue de démonstration et ses catégories.',
-                  style: TextStyle(color: Colors.white.withOpacity(.86),
-                      fontSize: 13, height: 1.45)),
-              const SizedBox(height: 21),
-              FilledButton.icon(
-                onPressed: () => goCatalog(),
-                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                label: const Text('Explorer le catalogue'),
-                style: FilledButton.styleFrom(backgroundColor: green,
-                    foregroundColor: navy, padding: const EdgeInsets.symmetric(
-                        horizontal: 17, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14))),
-              ),
-            ]),
-          ),
-        ]),
-      ),
-      const SizedBox(height: 27),
-      const SectionHeading('Explorer par catégorie',
-          'Trouvez facilement ce que vous cherchez'),
-      const SizedBox(height: 15),
-      SizedBox(height: 98, child: ListView(scrollDirection: Axis.horizontal,
-        children: [
-          CategoryTile('Tous', Icons.apps_rounded, blue, () => goCatalog()),
-          CategoryTile('Yaourts', Icons.icecream_rounded, const Color(0xFF27845A),
-              () => goCatalog('Yaourts')),
-          CategoryTile('Laitages', Icons.local_drink_rounded, blue,
-              () => goCatalog('Laitages')),
-          CategoryTile('Desserts', Icons.cake_rounded, const Color(0xFFB66A18),
-              () => goCatalog('Desserts')),
-        ])),
-      const SizedBox(height: 27),
-      Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        const Expanded(child: SectionHeading('Nos produits',
-            'Une sélection à découvrir')),
-        TextButton(onPressed: () => goCatalog(), child: const Text('Tout voir')),
-      ]),
-      const SizedBox(height: 13),
-      SizedBox(height: 218, child: ListView.separated(
-        scrollDirection: Axis.horizontal, itemCount: products.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (_, i) => SizedBox(width: 165,
-            child: ProductCard(product: products[i])),
-      )),
-      const SizedBox(height: 24),
-      Container(
-        padding: const EdgeInsets.all(17),
-        decoration: BoxDecoration(color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: line)),
-        child: const Row(children: [
-          CircleAvatar(backgroundColor: mint,
-              child: Icon(Icons.campaign_rounded, color: blue)),
-          SizedBox(width: 13),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Actualités & nouveautés', style: TextStyle(color: ink,
-                    fontWeight: FontWeight.w800, fontSize: 14)),
-                SizedBox(height: 4),
-                Text('Un espace prêt à accueillir les prochaines annonces.',
-                    style: TextStyle(color: muted, fontSize: 12, height: 1.4)),
-              ])),
-          Icon(Icons.chevron_right_rounded, color: muted),
-        ]),
-      ),
-      const SizedBox(height: 18),
-      const Text('Prototype indépendant • Données de démonstration',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: muted, fontSize: 10)),
-    ],
-  );
+  Widget _pagePadding(Widget child) => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: child,
+      );
 
-  Widget catalogPage() {
-    const categories = ['Tous', 'Yaourts', 'Laitages', 'Desserts'];
-    return ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
-      children: [
-        const Text('Le catalogue', style: TextStyle(fontSize: 29,
-            fontWeight: FontWeight.w900, color: ink, letterSpacing: -.7)),
-        const SizedBox(height: 5),
-        const Text('Explorez les produits de démonstration.',
-            style: TextStyle(color: muted, fontSize: 13)),
-        const SizedBox(height: 20),
-        TextField(
-          controller: searchController,
-          onChanged: (value) => setState(() => query = value),
-          decoration: InputDecoration(
-            hintText: 'Rechercher un produit...',
-            prefixIcon: const Icon(Icons.search_rounded, color: blue),
-            suffixIcon: query.isEmpty ? null : IconButton(
-              onPressed: () { searchController.clear(); setState(() => query = ''); },
-              icon: const Icon(Icons.close_rounded)),
-            filled: true, fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: line)),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: line)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: blue, width: 1.4)),
+  Widget _heading(String title, String subtitle) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.w900,
+              color: navy,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(subtitle, style: const TextStyle(color: Colors.blueGrey)),
+        ],
+      );
+
+  Widget _dashboard() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(23),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [green, sky, Color(0xFFE4EDFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bonjour 👋',
+                    style: TextStyle(
+                      color: navy.withValues(alpha: 0.75),
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isStaff
+                        ? 'Espace de gestion'
+                        : isMerchant
+                            ? 'Votre espace commerçant'
+                            : 'Le monde Soummam vous attend',
+                    style: const TextStyle(
+                      color: navy,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 24,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Produits, actualités et services dans une seule application.',
+                    style: TextStyle(color: navy, height: 1.4),
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: () => setState(() => tab = 1),
+                    icon: const Icon(Icons.arrow_forward_rounded),
+                    label: Text(isStaff ? 'Gérer les produits' : 'Découvrir'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _heading('Accès rapide', 'Les fonctionnalités de votre espace'),
+            const SizedBox(height: 14),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.25,
+              children: [
+                _quickCard(
+                  Icons.inventory_2_outlined,
+                  'Catalogue',
+                  '${products.length} produits démo',
+                  sky,
+                  () => setState(() => tab = 1),
+                ),
+                _quickCard(
+                  Icons.shopping_cart_outlined,
+                  'Panier',
+                  '${cart.values.fold<int>(0, (a, b) => a + b)} article(s)',
+                  green,
+                  () => setState(() => tab = isMerchant ? 2 : 1),
+                ),
+                _quickCard(
+                  Icons.receipt_long_outlined,
+                  'Commandes',
+                  '${orders.length} commande(s) locale(s)',
+                  const Color(0xFFDDE5FF),
+                  () => setState(() => tab = isStaff ? 2 : isMerchant ? 3 : 3),
+                ),
+                _quickCard(
+                  Icons.emoji_events_outlined,
+                  'Jeux & concours',
+                  'Bientôt disponible',
+                  const Color(0xFFFFE9C7),
+                  () => _message('Les jeux et concours seront annoncés prochainement.'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _heading('À la une', 'Actualités de démonstration'),
+            const SizedBox(height: 12),
+            _postCard(posts.first, 0),
+            const SizedBox(height: 12),
+            _notice(
+              'Mode démonstration',
+              'Les comptes, prix officiels, stocks, commandes en ligne et fonctions IA ne sont pas encore connectés à un serveur.',
+            ),
+          ],
+        ),
+      );
+
+  Widget _quickCard(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+    VoidCallback onTap,
+  ) =>
+      InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  backgroundColor: color,
+                  child: Icon(icon, color: navy),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: navy,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.blueGrey,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 15),
-        SingleChildScrollView(scrollDirection: Axis.horizontal,
-          child: Row(children: categories.map((c) {
-            final active = c == category;
-            return Padding(padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(label: Text(c), selected: active,
-                showCheckmark: false, selectedColor: green,
-                backgroundColor: Colors.white,
-                side: BorderSide(color: active ? green : line),
-                labelStyle: const TextStyle(color: ink, fontWeight: FontWeight.w700),
-                onSelected: (_) => setState(() => category = c)));
-          }).toList())),
-        const SizedBox(height: 17),
-        Row(children: [
-          const Expanded(child: Text('Produits de la démo',
-              style: TextStyle(color: ink, fontSize: 13,
-                  fontWeight: FontWeight.w700))),
-          Text('${filtered.length} articles', style: const TextStyle(
-              color: blue, fontWeight: FontWeight.w800, fontSize: 12)),
-        ]),
-        const SizedBox(height: 12),
-        if (filtered.isEmpty)
-          Container(padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(color: Colors.white,
-                borderRadius: BorderRadius.circular(20)),
-            child: const Column(children: [
-              Icon(Icons.search_off_rounded, size: 42, color: muted),
-              SizedBox(height: 10),
-              Text('Aucun produit trouvé',
-                  style: TextStyle(fontWeight: FontWeight.w800, color: ink)),
-              SizedBox(height: 4),
-              Text('Essayez un autre mot ou une autre catégorie.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: muted, fontSize: 12)),
-            ]))
-        else
-          GridView.builder(
-            shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-            itemCount: filtered.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
-                mainAxisExtent: 218),
-            itemBuilder: (_, i) => ProductCard(product: filtered[i])),
-        const SizedBox(height: 15),
-        const Text('Les noms et caractéristiques sont fictifs et doivent être validés.',
-            style: TextStyle(color: muted, fontSize: 10, height: 1.4)),
-      ]);
+      );
+
+  Widget _catalog() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading(
+              isMerchant ? 'Catalogue de gros' : 'Nos produits',
+              isMerchant
+                  ? 'Les conditionnements et tarifs seront confirmés par la société.'
+                  : 'Découvrez une sélection de produits Soummam.',
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final c in ['Tous', 'Yaourts', 'Laitages', 'Desserts'])
+                  ChoiceChip(
+                    label: Text(c),
+                    selected: category == c,
+                    onSelected: (_) => setState(() => category = c),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            for (final p in products.where(
+              (p) => category == 'Tous' || p.category == category,
+            )) ...[
+              _productCard(p),
+              const SizedBox(height: 12),
+            ],
+          ],
+        ),
+      );
+
+  Widget _productCard(Product p) => Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 180,
+              width: double.infinity,
+              color: mint,
+              child: p.image.isEmpty
+                  ? const Icon(Icons.local_drink_outlined, size: 75, color: blue)
+                  : Image.asset(
+                      p.image,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.local_drink_outlined,
+                        size: 75,
+                        color: blue,
+                      ),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    p.category.toUpperCase(),
+                    style: const TextStyle(
+                      color: blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    p.name,
+                    style: const TextStyle(
+                      color: navy,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(p.description),
+                  const SizedBox(height: 8),
+                  Text(
+                    p.pack,
+                    style: const TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (!isStaff)
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          setState(() => cart.update(
+                                p.name,
+                                (n) => n + 1,
+                                ifAbsent: () => 1,
+                              ));
+                          _message('Ajouté au panier de démonstration.');
+                        },
+                        icon: const Icon(Icons.add_shopping_cart),
+                        label: Text(
+                          isMerchant ? 'Ajouter au panier' : 'Enregistrer',
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _newsPage() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading('Actualités', 'La communauté Soummam'),
+            const SizedBox(height: 16),
+            for (int i = 0; i < posts.length; i++) ...[
+              _postCard(posts[i], i),
+              const SizedBox(height: 12),
+            ],
+            _notice(
+              'Communauté en ligne',
+              'Les publications, commentaires et réactions sont stockés localement dans cette démonstration. La synchronisation entre utilisateurs nécessite un serveur.',
+            ),
+          ],
+        ),
+      );
+
+  Widget _postCard(String text, int index) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundColor: mint,
+                    child: Icon(Icons.eco_outlined, color: blue),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Soummam Digital',
+                      style: TextStyle(
+                        color: navy,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.more_horiz),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(text, style: const TextStyle(height: 1.5)),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: () => setState(() {
+                      if (liked.contains(text)) {
+                        liked.remove(text);
+                      } else {
+                        liked.add(text);
+                      }
+                    }),
+                    icon: Icon(
+                      liked.contains(text)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: liked.contains(text) ? Colors.red : blue,
+                    ),
+                    label: Text('${liked.contains(text) ? 1 : 0} J’aime'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _commentDialog(),
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: Text('Commentaires${comments.isEmpty ? '' : ' (${comments.length})'}'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Future<void> _commentDialog() async {
+    commentController.clear();
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ajouter un commentaire'),
+        content: TextField(
+          controller: commentController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'Écrivez votre commentaire...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = commentController.text.trim();
+              if (value.isNotEmpty) {
+                setState(() => comments.add(value));
+              }
+              Navigator.pop(context);
+              if (value.isNotEmpty) _message('Commentaire enregistré localement.');
+            },
+            child: const Text('Publier'),
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget newsPage() => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-    children: [
-      const Text('Actualités', style: TextStyle(fontSize: 29,
-          fontWeight: FontWeight.w900, color: ink, letterSpacing: -.7)),
-      const SizedBox(height: 6),
-      const Text('Les nouveautés et annonces auront leur espace ici.',
-          style: TextStyle(color: muted, fontSize: 13)),
-      const SizedBox(height: 22),
-      Container(padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [mint, sky],
-              begin: Alignment.topLeft, end: Alignment.bottomRight),
-          borderRadius: BorderRadius.circular(25)),
-        child: const Column(crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _cartPage() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(backgroundColor: Colors.white,
-                child: Icon(Icons.auto_awesome_rounded, color: blue)),
-            SizedBox(height: 18),
-            Text('Restez au courant.', style: TextStyle(fontSize: 25,
-                fontWeight: FontWeight.w900, color: ink)),
-            SizedBox(height: 9),
-            Text('Cette rubrique pourra présenter les nouveautés, campagnes et informations validées.',
-                style: TextStyle(color: ink, height: 1.5, fontSize: 13)),
-          ])),
-      const SizedBox(height: 17),
-      const InfoRow(Icons.verified_outlined, 'Informations vérifiées',
-          'Publier uniquement des annonces confirmées.'),
-      const InfoRow(Icons.notifications_active_outlined, 'Notifications',
-          'La fonction sera ajoutée dans une prochaine version.'),
-    ]);
+            _heading('Votre panier', 'Vérifiez votre sélection'),
+            const SizedBox(height: 16),
+            if (cart.isEmpty)
+              _notice('Panier vide', 'Ajoutez des produits depuis le catalogue.')
+            else ...[
+              for (final entry in cart.entries.toList()) ...[
+                Card(
+                  child: ListTile(
+                    title: Text(entry.key),
+                    subtitle: Text('Quantité : ${entry.value}'),
+                    leading: const Icon(Icons.shopping_bag_outlined, color: blue),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => setState(() => cart.remove(entry.key)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              const SizedBox(height: 12),
+              _notice(
+                'Avant de commander',
+                'Les prix, quantités par carton et stocks doivent être confirmés par la société.',
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      orders.insert(
+                        0,
+                        'Commande démo • ${DateTime.now().toLocal().toString().substring(0, 16)} • En attente de validation',
+                      );
+                      cart.clear();
+                    });
+                    _message('Commande de démonstration enregistrée sur cet appareil.');
+                  },
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text('Créer une commande démo'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
 
-  Widget profilePage() => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-    children: [
-      const Text('Mon espace', style: TextStyle(fontSize: 29,
-          fontWeight: FontWeight.w900, color: ink, letterSpacing: -.7)),
-      const SizedBox(height: 18),
-      Container(padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-        decoration: BoxDecoration(color: Colors.white,
-            borderRadius: BorderRadius.circular(24), border: Border.all(color: line)),
-        child: const Column(children: [
-          CircleAvatar(radius: 38, backgroundColor: mint,
-              child: Icon(Icons.person_rounded, size: 42, color: blue)),
-          SizedBox(height: 12),
-          Text('Bienvenue', style: TextStyle(color: ink, fontSize: 21,
-              fontWeight: FontWeight.w900)),
-          SizedBox(height: 6),
-          Text('Votre espace personnel sera disponible dans une prochaine version.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 12, height: 1.5)),
-        ])),
-      const SizedBox(height: 18),
-      ProfileTile(Icons.storefront_outlined, 'Espace professionnel',
-          'Services destinés aux commerces',
-          () => message('L’espace professionnel n’est pas encore activé.')),
-      ProfileTile(Icons.support_agent_rounded, 'Assistance',
-          'Contact et questions',
-          () => message('Les coordonnées seront ajoutées après validation.')),
-      ProfileTile(Icons.info_outline_rounded, 'À propos du projet',
-          'Prototype indépendant',
-          () => showAboutDialog(context: context,
-              applicationName: 'Soummam Digital',
-              applicationVersion: '0.2.0',
-              applicationLegalese: 'Prototype indépendant, non affilié officiellement à Soummam.')),
-      const SizedBox(height: 18),
-      const Text('Prototype indépendant, non officiel. Les contenus doivent être validés avant diffusion.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: muted, fontSize: 10, height: 1.5)),
-    ]);
-}
+  Widget _ordersPage() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading(
+              isStaff ? 'Gestion des commandes' : 'Mes commandes',
+              'Historique local de démonstration',
+            ),
+            const SizedBox(height: 16),
+            if (orders.isEmpty)
+              _notice(
+                'Aucune commande',
+                isStaff
+                    ? 'Les commandes réelles apparaîtront après la connexion au serveur.'
+                    : 'Vos commandes de démonstration apparaîtront ici.',
+              )
+            else
+              for (final order in orders) ...[
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.receipt_long, color: blue),
+                    title: Text(order),
+                    subtitle: const Text(
+                      'Statut local — pas une confirmation de commande réelle',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            if (isStaff)
+              _notice(
+                'Workflow prévu',
+                'L’équipe autorisée vérifie chaque commande, la valide ou la refuse, puis choisit le distributeur. Cette action n’est pas connectée à un système réel.',
+              ),
+          ],
+        ),
+      );
 
-class BrandHeader extends StatelessWidget {
-  const BrandHeader({super.key});
-  @override
-  Widget build(BuildContext context) => Row(children: [
-    Container(width: 42, height: 42,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [green, sky]),
-        borderRadius: BorderRadius.circular(14)),
-      child: const Icon(Icons.spa_rounded, color: navy, size: 25)),
-    const SizedBox(width: 10),
-    const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Soummam', style: TextStyle(fontWeight: FontWeight.w900,
-          fontSize: 19, color: ink, letterSpacing: -.4)),
-      Text('DIGITAL EXPERIENCE', style: TextStyle(fontSize: 8,
-          letterSpacing: 1.5, color: blue, fontWeight: FontWeight.w800)),
-    ]),
-  ]);
-}
+  Widget _manageProducts() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading('Gestion des produits', 'Vue de démonstration'),
+            const SizedBox(height: 16),
+            for (final p in products) ...[
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.inventory_2_outlined, color: blue),
+                  title: Text(p.name),
+                  subtitle: Text('${p.category} • Stock non connecté'),
+                  trailing: const Icon(Icons.lock_outline),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            _notice(
+              'Gestion sécurisée',
+              'La modification réelle des tarifs et du stock nécessitera une API sécurisée et des permissions vérifiées côté serveur.',
+            ),
+          ],
+        ),
+      );
 
-class SectionHeading extends StatelessWidget {
-  final String title, subtitle;
-  const SectionHeading(this.title, this.subtitle, {super.key});
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(fontSize: 20,
-          fontWeight: FontWeight.w900, color: ink, letterSpacing: -.4)),
-      const SizedBox(height: 4),
-      Text(subtitle, style: const TextStyle(fontSize: 12,
-          color: muted, height: 1.35)),
-    ]);
-}
+  Widget _accountPage() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading('Mon espace', 'Profil et assistance'),
+            const SizedBox(height: 16),
+            Card(
+              child: Column(
+                children: [
+                  const ListTile(
+                    leading: Icon(Icons.person_outline, color: blue),
+                    title: Text('Profil consommateur'),
+                    subtitle: Text('Connexion non activée'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.support_agent, color: blue),
+                    title: const Text('Aide et support'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _message(
+                      'Le support en ligne sera disponible après la mise en place du serveur.',
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  const ListTile(
+                    leading: Icon(Icons.emoji_events_outlined, color: blue),
+                    title: Text('Jeux et concours'),
+                    subtitle: Text('Bientôt disponible'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _notice(
+              'Confidentialité',
+              'Ce prototype ne crée pas de compte et ne transmet pas les données à un serveur.',
+            ),
+          ],
+        ),
+      );
 
-class CategoryTile extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  const CategoryTile(this.title, this.icon, this.color, this.onTap, {super.key});
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(right: 11),
-    child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(18),
-      child: Container(width: 79,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 7),
-        decoration: BoxDecoration(color: Colors.white,
-            borderRadius: BorderRadius.circular(18), border: Border.all(color: line)),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon, color: color, size: 27),
-          const SizedBox(height: 8),
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: ink, fontWeight: FontWeight.w700,
-                  fontSize: 10)),
-        ]))));
-}
+  Widget _supportPage() => _pagePadding(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading('Support', 'Comment pouvons-nous vous aider ?'),
+            const SizedBox(height: 16),
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(18),
+                child: Column(
+                  children: [
+                    Icon(Icons.support_agent, color: blue, size: 48),
+                    SizedBox(height: 12),
+                    Text(
+                      'Centre d’assistance',
+                      style: TextStyle(
+                        color: navy,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Le chat, les tickets et le suivi des demandes nécessitent une connexion au service de support.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _notice(
+              'Assistant IA',
+              'Un assistant réel devra consulter les données autorisées du serveur et ne jamais inventer le statut d’une commande.',
+            ),
+          ],
+        ),
+      );
 
-class ProductCard extends StatelessWidget {
-  final Product product;
-  const ProductCard({super.key, required this.product});
-  @override
-  Widget build(BuildContext context) => Card(
-    color: Colors.white, elevation: 0, margin: EdgeInsets.zero,
-    clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(21),
-        side: const BorderSide(color: line)),
-    child: InkWell(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => ProductDetails(product: product))),
-      child: Padding(padding: const EdgeInsets.all(11),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(child: Container(width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                product.color, product.color.withOpacity(.55)],
-                begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(15)),
-            child: Stack(children: [
-              Positioned(right: 8, top: 8, child: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(.75),
-                    shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_outward_rounded,
-                    size: 13, color: navy))),
-              Center(child: Icon(product.icon, size: 55, color: blue)),
-            ]))),
-          const SizedBox(height: 10),
-          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w900,
-                  fontSize: 13, color: ink)),
-          const SizedBox(height: 5),
-          Row(children: [
-            Expanded(child: Text(product.category, maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: muted))),
-            Text(product.size, style: const TextStyle(fontSize: 10,
-                fontWeight: FontWeight.w800, color: blue)),
-          ]),
-        ]))));
-}
+  Widget _notice(String title, String body) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF1FF),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: navy,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(body, style: const TextStyle(height: 1.45)),
+          ],
+        ),
+      );
 
-class ProductDetails extends StatelessWidget {
-  final Product product;
-  const ProductDetails({super.key, required this.product});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Fiche produit')),
-    body: ListView(padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-      children: [
-        Container(height: 270,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              product.color, product.color.withOpacity(.55)],
-              begin: Alignment.topLeft, end: Alignment.bottomRight),
-            borderRadius: BorderRadius.circular(28)),
-          child: Icon(product.icon, size: 112, color: blue)),
-        const SizedBox(height: 23),
-        Align(alignment: Alignment.centerLeft, child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(color: mint, borderRadius: BorderRadius.circular(20)),
-          child: Text(product.category, style: const TextStyle(color: navy,
-              fontWeight: FontWeight.w800, fontSize: 11)))),
-        const SizedBox(height: 12),
-        Text(product.name, style: const TextStyle(fontSize: 28,
-            fontWeight: FontWeight.w900, color: ink, letterSpacing: -.6)),
-        const SizedBox(height: 8),
-        Text('Format : ${product.size}', style: const TextStyle(color: blue,
-            fontWeight: FontWeight.w800, fontSize: 13)),
-        const SizedBox(height: 20),
-        Container(padding: const EdgeInsets.all(17),
-          decoration: BoxDecoration(color: Colors.white,
-              borderRadius: BorderRadius.circular(18), border: Border.all(color: line)),
-          child: Text(product.description, style: const TextStyle(
-              fontSize: 14, height: 1.6, color: ink))),
-        const SizedBox(height: 16),
-        const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(Icons.info_outline_rounded, color: muted, size: 18),
-          SizedBox(width: 9),
-          Expanded(child: Text('Fiche de démonstration. Les ingrédients, valeurs nutritionnelles et informations officielles doivent être vérifiés avant publication.',
-              style: TextStyle(color: muted, fontSize: 11, height: 1.5))),
-        ]),
-      ]));
-}
-
-class InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String title, subtitle;
-  const InfoRow(this.icon, this.title, this.subtitle, {super.key});
-  @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(15),
-    decoration: BoxDecoration(color: Colors.white,
-        borderRadius: BorderRadius.circular(18), border: Border.all(color: line)),
-    child: Row(children: [
-      CircleAvatar(backgroundColor: mint, child: Icon(icon, color: blue)),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(color: ink,
-            fontWeight: FontWeight.w800, fontSize: 13)),
-        const SizedBox(height: 4),
-        Text(subtitle, style: const TextStyle(color: muted,
-            fontSize: 11, height: 1.4)),
-      ])),
-    ]));
-}
-
-class ProfileTile extends StatelessWidget {
-  final IconData icon;
-  final String title, subtitle;
-  final VoidCallback onTap;
-  const ProfileTile(this.icon, this.title, this.subtitle, this.onTap, {super.key});
-  @override
-  Widget build(BuildContext context) => Card(
-    color: Colors.white, elevation: 0, margin: const EdgeInsets.only(bottom: 10),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: line)),
-    child: ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-      leading: CircleAvatar(backgroundColor: mint, child: Icon(icon, color: blue)),
-      title: Text(title, style: const TextStyle(color: ink,
-          fontWeight: FontWeight.w800, fontSize: 13)),
-      subtitle: Text(subtitle, style: const TextStyle(color: muted, fontSize: 11)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: muted),
-      onTap: onTap,
-    ));
+  void _message(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 }
