@@ -23,6 +23,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Verify required files
+        run: |
+          test -f lib/main.dart
+          test -f assets/soummam_logo.jpeg
+          test -f assets/mamzoudj_cerise.png
+
       - name: Create Android project
         run: |
           flutter create \
@@ -30,19 +36,52 @@ jobs:
             --org com.soummam.digital \
             build_app
 
-      - name: Add Soummam application code
+      - name: Copy Dart code and assets
         run: |
           cp lib/main.dart build_app/lib/main.dart
+          mkdir -p build_app/assets
+          cp assets/soummam_logo.jpeg build_app/assets/
+          cp assets/mamzoudj_cerise.png build_app/assets/
+
+      - name: Configure Flutter assets
+        working-directory: build_app
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("pubspec.yaml")
+          content = path.read_text()
+
+          old = "flutter:\n  uses-material-design: true"
+          new = (
+              "flutter:\n"
+              "  uses-material-design: true\n"
+              "  assets:\n"
+              "    - assets/soummam_logo.jpeg\n"
+              "    - assets/mamzoudj_cerise.png"
+          )
+
+          if old not in content:
+              raise SystemExit(
+                  "Could not locate Flutter section in pubspec.yaml"
+              )
+
+          path.write_text(content.replace(old, new, 1))
+          PY
 
       - name: Resolve dependencies
         working-directory: build_app
         run: flutter pub get
 
+      - name: Check Dart formatting
+        working-directory: build_app
+        run: dart format --output=none --set-exit-if-changed lib/main.dart
+
       - name: Build release APK
         working-directory: build_app
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: soummam-digital-android
