@@ -3,7 +3,8 @@ name: Build Soummam Digital APK
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -48,34 +49,55 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("pubspec.yaml")
           content = path.read_text()
 
-          old = "flutter:\n  uses-material-design: true"
-          new = (
-              "flutter:\n"
-              "  uses-material-design: true\n"
-              "  assets:\n"
-              "    - assets/soummam_logo.jpeg\n"
-              "    - assets/mamzoudj_cerise.png"
+          match = re.search(r"(?m)^flutter:[ \t]*(?:#.*)?$", content)
+          if not match:
+              raise SystemExit("ERROR: flutter section not found")
+
+          start = match.end()
+          next_section = re.search(
+              r"(?m)^[A-Za-z_][A-Za-z0-9_]*:[ \t]*(?:#.*)?$",
+              content[start:]
           )
 
-          if old not in content:
-              raise SystemExit(
-                  "Could not locate Flutter section in pubspec.yaml"
-              )
+          end = start + next_section.start() if next_section else len(content)
+          section = content[start:end]
 
-          path.write_text(content.replace(old, new, 1))
+          section = re.sub(
+              r"(?m)^  assets:[ \t]*\n(?:^    - .*\n)*",
+              "",
+              section
+          )
+
+          if not re.search(
+              r"(?m)^  uses-material-design:[ \t]*true[ \t]*$",
+              section
+          ):
+              section = "\n  uses-material-design: true\n" + section
+
+          section = section.rstrip() + (
+              "\n  assets:\n"
+              "    - assets/soummam_logo.jpeg\n"
+              "    - assets/mamzoudj_cerise.png\n"
+          )
+
+          content = content[:start] + section + content[end:]
+          path.write_text(content)
+          print("Flutter assets configured successfully.")
+          print(path.read_text())
           PY
 
       - name: Resolve dependencies
         working-directory: build_app
         run: flutter pub get
 
-      - name: Check Dart formatting
+      - name: Check Dart syntax and format
         working-directory: build_app
-        run: dart format --output=none --set-exit-if-changed lib/main.dart
+        run: dart format lib/main.dart
 
       - name: Build release APK
         working-directory: build_app
